@@ -23,6 +23,7 @@ type ProviderSettings = {
 				| "xai"
 				| "groq"
 				| "chutes"
+				| "switchpoint"
 		  )
 		| undefined
 	apiModelId?: string | undefined
@@ -123,6 +124,7 @@ type ProviderSettings = {
 	xaiApiKey?: string | undefined
 	groqApiKey?: string | undefined
 	chutesApiKey?: string | undefined
+	switchpointApiKey?: string | undefined
 	modelMaxTokens?: number | undefined
 	modelMaxThinkingTokens?: number | undefined
 	includeMaxTokens?: boolean | undefined
@@ -163,6 +165,7 @@ type GlobalSettings = {
 							| "xai"
 							| "groq"
 							| "chutes"
+							| "switchpoint"
 					  )
 					| undefined
 		  }[]
@@ -621,10 +624,33 @@ interface RooCodeAPI extends EventEmitter<RooCodeEvents> {
 	 */
 	isReady(): boolean
 }
+type ProviderName =
+	| "anthropic"
+	| "glama"
+	| "openrouter"
+	| "bedrock"
+	| "vertex"
+	| "openai"
+	| "ollama"
+	| "vscode-lm"
+	| "lmstudio"
+	| "gemini"
+	| "openai-native"
+	| "mistral"
+	| "deepseek"
+	| "unbound"
+	| "requesty"
+	| "human-relay"
+	| "fake-ai"
+	| "xai"
+	| "groq"
+	| "chutes"
+	| "switchpoint"
 
 export {
 	type ClineMessage,
 	type GlobalSettings,
+	type ProviderName,
 	type ProviderSettings,
 	type RooCodeAPI,
 	RooCodeEventName,

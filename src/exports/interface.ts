@@ -124,3 +124,26 @@ export interface RooCodeAPI extends EventEmitter<RooCodeEvents> {
 	 */
 	isReady(): boolean
 }
+
+export type ProviderName =
+	| "anthropic"
+	| "glama"
+	| "openrouter"
+	| "bedrock"
+	| "vertex"
+	| "openai"
+	| "ollama"
+	| "vscode-lm"
+	| "lmstudio"
+	| "gemini"
+	| "openai-native"
+	| "mistral"
+	| "deepseek"
+	| "unbound"
+	| "requesty"
+	| "human-relay"
+	| "fake-ai"
+	| "xai"
+	| "groq"
+	| "chutes"
+	| "switchpoint"

@@ -24,6 +24,7 @@ type ProviderSettings = {
 				| "xai"
 				| "groq"
 				| "chutes"
+				| "switchpoint"
 		  )
 		| undefined
 	apiModelId?: string | undefined
@@ -166,6 +167,7 @@ type GlobalSettings = {
 							| "xai"
 							| "groq"
 							| "chutes"
+							| "switchpoint"
 					  )
 					| undefined
 		  }[]

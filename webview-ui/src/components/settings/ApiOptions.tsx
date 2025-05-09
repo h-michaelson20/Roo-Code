@@ -33,6 +33,7 @@ import {
 	OpenAICompatible,
 	OpenRouter,
 	Requesty,
+	Switchpoint,
 	Unbound,
 	Vertex,
 	VSCodeLM,
@@ -266,6 +267,104 @@ const ApiOptions = ({
 		}
 	}, [selectedProvider])
 
+	const renderProviderSettings = () => {
+		switch (selectedProvider) {
+			case "anthropic":
+				return (
+					<Anthropic
+						apiConfiguration={apiConfiguration}
+						setApiConfigurationField={setApiConfigurationField}
+					/>
+				)
+			case "bedrock":
+				return (
+					<Bedrock apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
+				)
+			case "chutes":
+				return (
+					<Chutes apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
+				)
+			case "deepseek":
+				return (
+					<DeepSeek apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
+				)
+			case "gemini":
+				return (
+					<Gemini apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
+				)
+			case "glama":
+				return <Glama apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
+			case "groq":
+				return <Groq apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
+			case "lmstudio":
+				return (
+					<LMStudio apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
+				)
+			case "mistral":
+				return (
+					<Mistral apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
+				)
+			case "ollama":
+				return (
+					<Ollama apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
+				)
+			case "openai":
+				return (
+					<OpenAICompatible
+						apiConfiguration={apiConfiguration}
+						setApiConfigurationField={setApiConfigurationField}
+					/>
+				)
+			case "openai-native":
+				return (
+					<OpenAI apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
+				)
+			case "openrouter":
+				return (
+					<OpenRouter
+						apiConfiguration={apiConfiguration}
+						setApiConfigurationField={setApiConfigurationField}
+						routerModels={routerModels}
+						selectedModelId={selectedModelId}
+						uriScheme={uriScheme}
+						fromWelcomeView={fromWelcomeView}
+					/>
+				)
+			case "requesty":
+				return (
+					<Requesty
+						apiConfiguration={apiConfiguration}
+						setApiConfigurationField={setApiConfigurationField}
+						routerModels={routerModels}
+						refetchRouterModels={refetchRouterModels}
+					/>
+				)
+			case "switchpoint":
+				return (
+					<Switchpoint
+						apiConfiguration={apiConfiguration}
+						setApiConfigurationField={setApiConfigurationField}
+					/>
+				)
+			case "unbound":
+				return (
+					<Unbound apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
+				)
+			case "vertex":
+				return (
+					<Vertex apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
+				)
+			case "vscode-lm":
+				return (
+					<VSCodeLM apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
+				)
+			case "xai":
+				return <XAI apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
+			default:
+				return null
+		}
+	}
+
 	return (
 		<div className="flex flex-col gap-3">
 			<div className="flex flex-col gap-1 relative">
@@ -295,118 +394,9 @@ const ApiOptions = ({
 
 			{errorMessage && <ApiErrorMessage errorMessage={errorMessage} />}
 
-			{selectedProvider === "openrouter" && (
-				<OpenRouter
-					apiConfiguration={apiConfiguration}
-					setApiConfigurationField={setApiConfigurationField}
-					routerModels={routerModels}
-					selectedModelId={selectedModelId}
-					uriScheme={uriScheme}
-					fromWelcomeView={fromWelcomeView}
-				/>
-			)}
+			{renderProviderSettings()}
 
-			{selectedProvider === "requesty" && (
-				<Requesty
-					apiConfiguration={apiConfiguration}
-					setApiConfigurationField={setApiConfigurationField}
-					routerModels={routerModels}
-					refetchRouterModels={refetchRouterModels}
-				/>
-			)}
-
-			{selectedProvider === "glama" && (
-				<Glama
-					apiConfiguration={apiConfiguration}
-					setApiConfigurationField={setApiConfigurationField}
-					routerModels={routerModels}
-					uriScheme={uriScheme}
-				/>
-			)}
-
-			{selectedProvider === "unbound" && (
-				<Unbound
-					apiConfiguration={apiConfiguration}
-					setApiConfigurationField={setApiConfigurationField}
-					routerModels={routerModels}
-				/>
-			)}
-
-			{selectedProvider === "anthropic" && (
-				<Anthropic apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
-			)}
-
-			{selectedProvider === "openai-native" && (
-				<OpenAI apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
-			)}
-
-			{selectedProvider === "mistral" && (
-				<Mistral apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
-			)}
-
-			{selectedProvider === "bedrock" && (
-				<Bedrock
-					apiConfiguration={apiConfiguration}
-					setApiConfigurationField={setApiConfigurationField}
-					selectedModelInfo={selectedModelInfo}
-				/>
-			)}
-
-			{selectedProvider === "vertex" && (
-				<Vertex apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
-			)}
-
-			{selectedProvider === "gemini" && (
-				<Gemini apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
-			)}
-
-			{selectedProvider === "openai" && (
-				<OpenAICompatible
-					apiConfiguration={apiConfiguration}
-					setApiConfigurationField={setApiConfigurationField}
-				/>
-			)}
-
-			{selectedProvider === "lmstudio" && (
-				<LMStudio apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
-			)}
-
-			{selectedProvider === "deepseek" && (
-				<DeepSeek apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
-			)}
-
-			{selectedProvider === "vscode-lm" && (
-				<VSCodeLM apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
-			)}
-
-			{selectedProvider === "ollama" && (
-				<Ollama apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
-			)}
-
-			{selectedProvider === "xai" && (
-				<XAI apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
-			)}
-
-			{selectedProvider === "groq" && (
-				<Groq apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
-			)}
-
-			{selectedProvider === "chutes" && (
-				<Chutes apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
-			)}
-
-			{selectedProvider === "human-relay" && (
-				<>
-					<div className="text-sm text-vscode-descriptionForeground">
-						{t("settings:providers.humanRelay.description")}
-					</div>
-					<div className="text-sm text-vscode-descriptionForeground">
-						{t("settings:providers.humanRelay.instructions")}
-					</div>
-				</>
-			)}
-
-			{selectedProviderModels.length > 0 && (
+			{selectedProviderModels.length > 0 && selectedProvider !== "switchpoint" && (
 				<>
 					<div>
 						<label className="block font-medium mb-1">{t("settings:providers.model")}</label>

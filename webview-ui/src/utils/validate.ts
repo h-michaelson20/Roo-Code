@@ -74,6 +74,16 @@ export function validateApiConfiguration(apiConfiguration: ApiConfiguration): st
 				return i18next.t("settings:validation.modelSelector")
 			}
 			break
+		case "chutes":
+			if (!apiConfiguration.chutesApiKey) {
+				return i18next.t("settings:validation.apiKey")
+			}
+			break
+		case "switchpoint":
+			if (!apiConfiguration.switchpointApiKey) {
+				return i18next.t("settings:validation.apiKey")
+			}
+			break
 	}
 
 	return undefined

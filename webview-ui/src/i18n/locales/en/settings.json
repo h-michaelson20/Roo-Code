@@ -246,7 +246,9 @@
 			"medium": "Medium",
 			"low": "Low"
 		},
-		"setReasoningLevel": "Enable Reasoning Effort"
+		"setReasoningLevel": "Enable Reasoning Effort",
+		"switchpointApiKey": "Switchpoint API Key",
+		"getSwitchpointApiKey": "Get Switchpoint API Key"
 	},
 	"browser": {
 		"enable": {

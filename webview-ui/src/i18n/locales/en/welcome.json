@@ -9,6 +9,10 @@
 			"description": "Your optimized LLM router",
 			"incentive": "$1 free credit"
 		},
+		"switchpoint": {
+			"description": "Ultra efficient low cost smart LLM",
+			"incentive": "Free credit available"
+		},
 		"openrouter": {
 			"description": "A unified interface for LLMs"
 		}

@@ -10,6 +10,10 @@ export function getOpenRouterAuthUrl(uriScheme?: string) {
 	return `https://openrouter.ai/auth?callback_url=${getCallbackUrl("openrouter", uriScheme)}`
 }
 
+export function getSwitchpointAuthUrl(uriScheme?: string) {
+	return `https://switchpoint.dev?callback_url=${getCallbackUrl("switchpoint", uriScheme)}`
+}
+
 export function getRequestyAuthUrl(uriScheme?: string) {
 	return `https://app.requesty.ai/oauth/authorize?callback_url=${getCallbackUrl("requesty", uriScheme)}`
 }

@@ -7,12 +7,11 @@ import ApiOptions from "../settings/ApiOptions"
 import { Tab, TabContent } from "../common/Tab"
 import { Trans } from "react-i18next"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
-import { getRequestyAuthUrl, getOpenRouterAuthUrl } from "@src/oauth/urls"
+import { getRequestyAuthUrl, getOpenRouterAuthUrl, getSwitchpointAuthUrl } from "@src/oauth/urls"
 import RooHero from "./RooHero"
-import knuthShuffle from "knuth-shuffle-seeded"
 
 const WelcomeView = () => {
-	const { apiConfiguration, currentApiConfigName, setApiConfiguration, uriScheme, machineId } = useExtensionState()
+	const { apiConfiguration, currentApiConfigName, setApiConfiguration, uriScheme } = useExtensionState()
 	const { t } = useAppTranslation()
 	const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined)
 
@@ -47,11 +46,24 @@ const WelcomeView = () => {
 				<div className="mb-4">
 					<h4 className="mt-3 mb-2 text-center">{t("welcome:startRouter")}</h4>
 
-					<div className="flex gap-4">
+					<div className="flex flex-wrap gap-2">
 						{/* Define the providers */}
 						{(() => {
 							// Provider card configuration
 							const providers = [
+								{
+									slug: "openrouter",
+									name: "OpenRouter",
+									description: t("welcome:routers.openrouter.description"),
+									authUrl: getOpenRouterAuthUrl(uriScheme),
+								},
+								{
+									slug: "switchpoint",
+									name: "Switchpoint",
+									description: t("welcome:routers.switchpoint.description"),
+									incentive: t("welcome:routers.switchpoint.incentive"),
+									authUrl: getSwitchpointAuthUrl(uriScheme),
+								},
 								{
 									slug: "requesty",
 									name: "Requesty",
@@ -59,28 +71,31 @@ const WelcomeView = () => {
 									incentive: t("welcome:routers.requesty.incentive"),
 									authUrl: getRequestyAuthUrl(uriScheme),
 								},
-								{
-									slug: "openrouter",
-									name: "OpenRouter",
-									description: t("welcome:routers.openrouter.description"),
-									authUrl: getOpenRouterAuthUrl(uriScheme),
-								},
 							]
 
-							// Shuffle providers based on machine ID (will be consistent for the same machine)
-							const orderedProviders = [...providers]
-							knuthShuffle(orderedProviders, (machineId as any) || Date.now())
+							// Use the ordered providers directly instead of shuffling
+							const orderedProviders = providers
+							// If we wanted to shuffle again, we would use:
+							// const orderedProviders = [...providers]
+							// knuthShuffle(orderedProviders, (machineId as any) || Date.now())
 
 							// Render the provider cards
 							return orderedProviders.map((provider, index) => (
 								<a
 									key={index}
 									href={provider.authUrl}
-									className="flex-1 border border-vscode-panel-border rounded p-4 flex flex-col items-center cursor-pointer transition-all  no-underline text-inherit"
+									className="flex-1 min-w-[30%] max-w-[32%] border border-vscode-panel-border rounded p-3 flex flex-col items-center cursor-pointer transition-all no-underline text-inherit"
 									target="_blank"
 									rel="noopener noreferrer">
-									<div className="font-bold">{provider.name}</div>
-									<div className="w-16 h-16 flex items-center justify-center rounded m-2 overflow-hidden relative">
+									<div
+										className="font-bold"
+										style={{
+											fontSize: "min(max(0.4rem, 0.3rem + 2vw), 1rem)",
+											lineHeight: "1.1",
+										}}>
+										{provider.name}
+									</div>
+									<div className="w-14 h-14 flex items-center justify-center rounded m-2 overflow-hidden relative">
 										<img
 											src={`${imagesBaseUri}/${provider.slug}.png`}
 											alt={provider.name}

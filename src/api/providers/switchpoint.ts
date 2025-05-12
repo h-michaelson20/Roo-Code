@@ -39,6 +39,8 @@ export class SwitchpointHandler extends BaseOpenAiCompatibleProvider<Switchpoint
 
 	// Override createMessage to handle non-streaming responses
 	override async *createMessage(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): ApiStream {
+		console.log("[SwitchpointHandler] Creating message with system prompt")
+
 		try {
 			// Format messages properly including system prompt and user messages
 			const formattedMessages = [{ role: "system", content: systemPrompt }, ...convertToOpenAiMessages(messages)]
@@ -73,6 +75,8 @@ export class SwitchpointHandler extends BaseOpenAiCompatibleProvider<Switchpoint
 				throw new Error(`Failed to parse response as JSON: ${jsonError.message}`)
 			}
 
+			console.log("[SwitchpointHandler] Response received successfully")
+
 			// Check if response has the expected format
 			if (
 				!chatCompletion ||
@@ -104,8 +108,9 @@ export class SwitchpointHandler extends BaseOpenAiCompatibleProvider<Switchpoint
 			// Yield end of stream usage metrics
 			yield {
 				type: "usage",
-				inputTokens: 0, // Placeholder values
-				outputTokens: 0,
+				inputTokens: chatCompletion.usage?.prompt_tokens || 0,
+				outputTokens: chatCompletion.usage?.completion_tokens || 0,
+				totalCost: chatCompletion.cost || 0,
 			}
 		} catch (error: any) {
 			let errorMessage = "Unknown error occurred"
@@ -116,6 +121,7 @@ export class SwitchpointHandler extends BaseOpenAiCompatibleProvider<Switchpoint
 				errorMessage = `Error: ${error.message}`
 			}
 
+			console.error("[SwitchpointHandler] Error in createMessage:", errorMessage)
 			throw new Error(`Switchpoint API error: ${errorMessage}`)
 		}
 	}

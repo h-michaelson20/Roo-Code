@@ -125,6 +125,7 @@ type ProviderSettings = {
 	xaiApiKey?: string | undefined
 	groqApiKey?: string | undefined
 	chutesApiKey?: string | undefined
+	switchpointApiKey?: string | undefined
 	modelMaxTokens?: number | undefined
 	modelMaxThinkingTokens?: number | undefined
 	includeMaxTokens?: boolean | undefined

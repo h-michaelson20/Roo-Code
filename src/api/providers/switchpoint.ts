@@ -1,11 +1,11 @@
 import { ApiHandlerOptions } from "../../shared/api"
 import { BaseOpenAiCompatibleProvider } from "./base-openai-compatible-provider"
 import { ApiStream } from "../transform/stream"
-import { convertToOpenAiMessages } from "../transform/openai-format"
+import { convertToOpenAiMessages } from "../transform/openai-format.js"
 import { Anthropic } from "@anthropic-ai/sdk"
 
 // Switchpoint AI API URL and model configuration
-const SWITCHPOINT_API_URL = "https://symph-ai-chat.vercel.app/api/streamless-result"
+const SWITCHPOINT_API_URL = "https://www.switchpoint.dev/v1/chat/completions"
 
 // Define a simple model ID type for Switchpoint
 type SwitchpointModelId = "switchpoint"
@@ -37,80 +37,107 @@ export class SwitchpointHandler extends BaseOpenAiCompatibleProvider<Switchpoint
 		})
 	}
 
-	// Override createMessage to handle non-streaming responses
+	// Override createMessage to handle streaming responses
 	override async *createMessage(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): ApiStream {
 		console.log("[SwitchpointHandler] Creating message with system prompt")
 
 		try {
 			// Format messages properly including system prompt and user messages
-			const formattedMessages = [{ role: "system", content: systemPrompt }, ...convertToOpenAiMessages(messages)]
+			const formattedMessages = [
+				{ role: "system", content: systemPrompt },
+				...convertToOpenAiMessages(messages).map((msg) => ({
+					role: msg.role,
+					content: typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content),
+				})),
+			]
 
 			// Log payload being sent
-			const payload = { messages: formattedMessages }
+			const payload = {
+				model: "switchpoint-router", // or your provisioned model
+				messages: formattedMessages,
+				stream: true,
+			}
 
-			// Use fetch for API call since the API is non-streaming
-			const response = await fetch(this.baseURL, {
+			console.log("[SwitchpointHandler] Formatted messages:", JSON.stringify(formattedMessages, null, 2))
+			console.log("[SwitchpointHandler] Sending request to:", SWITCHPOINT_API_URL)
+			console.log("[SwitchpointHandler] Request payload:", JSON.stringify(payload, null, 2))
+
+			const response = await fetch(SWITCHPOINT_API_URL, {
 				method: "POST",
 				headers: {
 					Authorization: `Bearer ${this.options.apiKey}`,
 					"Content-Type": "application/json",
-					"X-Switchpoint-App": "roo-code",
 				},
 				body: JSON.stringify(payload),
 			})
 
-			if (!response.ok) {
-				const errorText = await response.text()
-				throw new Error(`HTTP error! Status: ${response.status} - ${errorText}`)
-			}
+			console.log("[SwitchpointHandler] Response status:", response.status)
+			console.log("[SwitchpointHandler] Response headers:", {
+				"content-type": response.headers.get("content-type"),
+				"content-length": response.headers.get("content-length"),
+				"transfer-encoding": response.headers.get("transfer-encoding"),
+			})
 
-			// Try parsing response as JSON
-			let chatCompletion
-			try {
-				chatCompletion = await response.json()
-			} catch (jsonError) {
-				console.error("[SwitchpointHandler] Failed to parse JSON response:", jsonError)
-				const responseText = await response.text()
-				console.log("[SwitchpointHandler] Raw response first 200 chars:", responseText.slice(0, 200))
-				throw new Error(`Failed to parse response as JSON: ${jsonError.message}`)
-			}
+			if (!response.body) throw new Error("No response body")
 
-			console.log("[SwitchpointHandler] Response received successfully")
+			console.log("[SwitchpointHandler] Starting to read stream...")
 
-			// Check if response has the expected format
-			if (
-				!chatCompletion ||
-				!chatCompletion.choices ||
-				!chatCompletion.choices[0] ||
-				!chatCompletion.choices[0].message ||
-				!chatCompletion.choices[0].message.content
-			) {
-				throw new Error("Invalid response format from API")
-			}
+			const reader = response.body.getReader()
+			const decoder = new TextDecoder()
+			let buffer = ""
+			let usage: any = null
+			let cost: any = null
 
-			// Get the message content from the response
-			const content = chatCompletion.choices[0].message.content
-
-			// Since it's not streamed but we need to implement a streaming interface,
-			// we'll break the text into chunks to simulate streaming
-			// This helps with UI responsiveness
-			const chunkSize = 20 // characters per chunk
-			for (let i = 0; i < content.length; i += chunkSize) {
-				yield {
-					type: "text",
-					text: content.substring(i, Math.min(i + chunkSize, content.length)),
+			while (true) {
+				const { done, value } = await reader.read()
+				console.log("[SwitchpointHandler] Stream read:", { done, valueLength: value?.length })
+				if (done) break
+				buffer += decoder.decode(value, { stream: true })
+				console.log("[SwitchpointHandler] Current buffer:", buffer)
+				const lines = buffer.split("\n")
+				buffer = lines.pop() || ""
+				for (const line of lines) {
+					console.log("[SwitchpointHandler] Processing line:", line)
+					if (!line.startsWith("data: ")) continue
+					const data = line.slice(6)
+					if (data === "[DONE]") return
+					try {
+						const parsed = JSON.parse(data)
+						console.log("[SwitchpointHandler] Parsed chunk:", JSON.stringify(parsed, null, 2))
+						if (parsed.type === "content" && typeof parsed.text === "string") {
+							yield { type: "text", text: parsed.text }
+						} else if (parsed.choices?.[0]?.delta?.content) {
+							yield { type: "text", text: parsed.choices[0].delta.content }
+						} else if (parsed.choices?.[0]?.message?.content) {
+							yield { type: "text", text: parsed.choices[0].message.content }
+						} else if (typeof parsed.content === "string") {
+							yield { type: "text", text: parsed.content }
+						} else {
+							console.log("[SwitchpointHandler] Unknown chunk format:", JSON.stringify(parsed, null, 2))
+						}
+						if (parsed.usage) {
+							usage = parsed.usage
+						}
+						if (parsed.cost) {
+							cost = parsed.cost
+						}
+					} catch (e) {
+						console.error("[SwitchpointHandler] Error parsing stream chunk:", e, data)
+						console.error("[SwitchpointHandler] Raw data that failed to parse:", data)
+					}
 				}
-
-				// Add a small delay to simulate streaming and improve UI responsiveness
-				await new Promise((resolve) => setTimeout(resolve, 5))
 			}
 
-			// Yield end of stream usage metrics
-			yield {
-				type: "usage",
-				inputTokens: chatCompletion.usage?.prompt_tokens || 0,
-				outputTokens: chatCompletion.usage?.completion_tokens || 0,
-				totalCost: chatCompletion.cost || 0,
+			console.log("[SwitchpointHandler] Stream completed. Usage:", usage, "Cost:", cost)
+
+			// Yield final usage metrics with cost
+			if (usage || cost) {
+				yield {
+					type: "usage",
+					inputTokens: usage?.prompt_tokens || 0,
+					outputTokens: usage?.completion_tokens || 0,
+					totalCost: cost ?? usage?.cost ?? 0,
+				}
 			}
 		} catch (error: any) {
 			let errorMessage = "Unknown error occurred"
